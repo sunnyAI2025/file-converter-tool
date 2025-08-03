@@ -262,7 +262,7 @@ const FileConverter: React.FC = () => {
                   style={{ width: '100%' }}
                   disabled={converting}
                 >
-                  {getAvailableOutputFormats().map(format => (
+                  {getAvailableOutputFormats().map((format: string) => (
                     <Option key={format} value={format}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <FileOutlined style={{ marginRight: '8px' }} />

@@ -7,8 +7,10 @@ require('dotenv').config();
 
 const fileRoutes = require('./routes/files');
 const imageRoutes = require('./routes/images');
+const authRoutes = require('./routes/auth');
 const { errorHandler } = require('./middleware/errorHandler');
 const { cleanupTempFiles } = require('./utils/fileProcessor');
+const { testConnection, initDatabase } = require('./utils/database');
 
 const app = express();
 const PORT = process.env.PORT || 5008;
@@ -18,8 +20,13 @@ app.use(helmet());
 
 // CORS配置
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3008',
-  credentials: true
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3008',
+    'http://localhost:8080'  // 测试页面域名
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // 速率限制
@@ -40,6 +47,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // 路由
 app.use('/api/files', fileRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/auth', authRoutes);
 
 // 健康检查端点
 app.get('/api/health', (req, res) => {
@@ -62,9 +70,15 @@ app.use(errorHandler);
 setInterval(cleanupTempFiles, 60 * 60 * 1000);
 
 // 启动服务器
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 服务器运行在端口 ${PORT}`);
   console.log(`📝 API文档: http://localhost:${PORT}/api/health`);
+  
+  // 测试数据库连接
+  await testConnection();
+  
+  // 初始化数据库表
+  await initDatabase();
   
   // 启动时清理一次临时文件
   cleanupTempFiles();

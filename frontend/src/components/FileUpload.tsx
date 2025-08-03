@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, Button, Card, Typography, Progress, Alert } from 'antd'
+import { Button, Card, Typography, Progress, Alert } from 'antd'
 import { 
   UploadOutlined, 
   FileOutlined, 
@@ -31,7 +31,6 @@ interface FileUploadProps {
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
-  accept = ['.txt', '.html', '.md', '.rtf', '.pdf', '.doc', '.docx', '.odt'],
   maxSize = 10,
   maxFiles = 1,
   onFilesChange,
@@ -114,13 +113,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     onFilesChange(updatedFiles)
   }
 
-  const updateFileStatus = (id: string, updates: Partial<UploadedFile>) => {
-    const updatedFiles = files.map(f => 
-      f.id === id ? { ...f, ...updates } : f
-    )
-    setFiles(updatedFiles)
-    onFilesChange(updatedFiles)
-  }
+  // Removed unused updateFileStatus function
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B'
@@ -130,8 +123,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const getFileIcon = (fileName: string) => {
-    const ext = fileName.split('.').pop()?.toLowerCase()
+  const getFileIcon = (_fileName: string) => {
+    // Extension not used currently, but parameter kept for future enhancement
     return <FileOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
   }
 
@@ -232,7 +225,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
                       <Alert
                         message={uploadedFile.error}
                         type="error"
-                        size="small"
                         style={{ marginTop: '8px' }}
                       />
                     )}

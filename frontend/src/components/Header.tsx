@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Layout, Menu, Typography } from 'antd'
+import { Layout, Menu, Typography, Dropdown, Button, Avatar, Space } from 'antd'
 import { 
   HomeOutlined, 
   FileOutlined, 
@@ -8,8 +8,14 @@ import {
   ScissorOutlined, 
   SwapOutlined, 
   EditOutlined,
-  ToolOutlined
+  ToolOutlined,
+  UserOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  BarChartOutlined
 } from '@ant-design/icons'
+import { getUser, handleLogout, isAuthenticated, User } from '../utils/auth'
 
 const { Header: AntHeader } = Layout
 const { Title } = Typography
@@ -17,6 +23,38 @@ const { Title } = Typography
 const Header: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // 监听登录状态变化
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const authenticated = isAuthenticated()
+      const currentUser = getUser()
+      setIsLoggedIn(authenticated)
+      setUser(currentUser)
+    }
+
+    checkAuthStatus()
+    
+    // 监听存储变化
+    window.addEventListener('storage', checkAuthStatus)
+    
+    // 监听自定义事件（用于登录成功后立即更新状态）
+    window.addEventListener('authStateChange', checkAuthStatus)
+    
+    return () => {
+      window.removeEventListener('storage', checkAuthStatus)
+      window.removeEventListener('authStateChange', checkAuthStatus)
+    }
+  }, [])
+
+  // 处理登出
+  const onLogout = async () => {
+    await handleLogout()
+    setIsLoggedIn(false)
+    setUser(null)
+  }
 
   const menuItems = [
     {
@@ -55,6 +93,37 @@ const Header: React.FC = () => {
     navigate(key)
   }
 
+  // 用户下拉菜单
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: '个人中心',
+      onClick: () => navigate('/user-center')
+    },
+    {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: '账户设置',
+      onClick: () => navigate('/user-center')
+    },
+    {
+      key: 'stats',
+      icon: <BarChartOutlined />,
+      label: '使用统计',
+      onClick: () => navigate('/user-center')
+    },
+    {
+      type: 'divider' as const
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: onLogout
+    }
+  ]
+
   return (
     <AntHeader style={{ 
       background: '#fff', 
@@ -81,18 +150,45 @@ const Header: React.FC = () => {
           </Title>
         </div>
         
-        <Menu
-          mode="horizontal"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={handleMenuClick}
-          style={{ 
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 500
-          }}
-          className="header-nav"
-        />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Menu
+            mode="horizontal"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={handleMenuClick}
+            style={{ 
+              border: 'none',
+              fontSize: '14px',
+              fontWeight: 500,
+              marginRight: '16px'
+            }}
+            className="header-nav"
+          />
+          
+          {/* 登录状态显示 */}
+          {isLoggedIn && user ? (
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <Button type="text" style={{ display: 'flex', alignItems: 'center' }}>
+                <Space>
+                  <Avatar size="small" icon={<UserOutlined />} />
+                  <span>{user.username}</span>
+                </Space>
+              </Button>
+            </Dropdown>
+          ) : (
+            <Button 
+              type="primary" 
+              icon={<LoginOutlined />}
+              onClick={() => navigate('/login')}
+            >
+              登录
+            </Button>
+          )}
+        </div>
       </div>
     </AntHeader>
   )

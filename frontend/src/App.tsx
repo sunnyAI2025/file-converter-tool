@@ -1,4 +1,4 @@
-import React from 'react'
+// import React from 'react' // React 18+ with new JSX transform doesn't need explicit React import
 import { Routes, Route } from 'react-router-dom'
 import { Layout } from 'antd'
 import Header from './components/Header'
@@ -9,6 +9,8 @@ import ImageCompress from './pages/ImageCompress'
 import ImageCrop from './pages/ImageCrop'
 import ImageConvert from './pages/ImageConvert'
 import ImageWatermark from './pages/ImageWatermark'
+import Login from './pages/Login'
+import UserCenter from './pages/UserCenter'
 
 const { Content } = Layout
 
@@ -24,6 +26,8 @@ function App() {
           <Route path="/image-crop" element={<ImageCrop />} />
           <Route path="/image-convert" element={<ImageConvert />} />
           <Route path="/image-watermark" element={<ImageWatermark />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/user-center" element={<UserCenter />} />
         </Routes>
       </Content>
       <Footer />
